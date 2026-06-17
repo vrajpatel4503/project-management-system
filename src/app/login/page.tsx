@@ -1,7 +1,13 @@
+import LoginForm from "@/components/auth/login-form";
+
+export const metadata = {
+  title: "Login",
+};
+
 export default function LoginPage() {
   return (
-    <>
-      <h1>Login</h1>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <LoginForm />
+    </div>
   );
 }
