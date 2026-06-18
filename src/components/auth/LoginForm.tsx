@@ -12,7 +12,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/components/lib/firebase";
 import { FirebaseError } from "firebase/app";
 
-import { QUICK_LOGINS } from "@/components/data/auth-data"
+import { QUICK_LOGINS } from "@/components/constants/auth-data";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
@@ -48,7 +48,7 @@ export default function LoginForm() {
 
       toast.success("Login Successful");
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (error: any) {
       if (error instanceof FirebaseError) {
         switch (error.code) {
