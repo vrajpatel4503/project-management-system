@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation"; //usePathname is a hook from Next.js that lets you get the current URL path in the App Router.
-import { SIDEBAR_LINK } from "../constants";
+import { SIDEBAR_LINK } from "@/data/sidebar-link";
 
 import logo from "../../../public/Logo.png";
 
@@ -11,7 +11,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 h-screen flex flex-col border-r bg-card">
+    <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar">
       {/* Logo */}
       <div className="h-16 px-5 flex items-center gap-3 border-b">
         <div className="flex flex-col items-center">

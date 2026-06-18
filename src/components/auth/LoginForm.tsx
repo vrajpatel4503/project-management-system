@@ -9,10 +9,10 @@ import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/components/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { FirebaseError } from "firebase/app";
 
-import { QUICK_LOGINS } from "@/components/constants/auth-data";
+import { QUICK_LOGINS } from "@/data/auth-data";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
