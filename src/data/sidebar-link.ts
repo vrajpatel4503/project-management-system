@@ -27,11 +27,11 @@ export const SIDEBAR_LINK = [
     label: "Tasks",
     icon: CheckSquare,
   },
-  {
-    href: "/kanban",
-    label: "Kanban",
-    icon: ShieldCheck,
-  },
+  // {
+  //   href: "/kanban",
+  //   label: "Kanban",
+  //   icon: ShieldCheck,
+  // },
   {
     href: "/qa-tracking",
     label: "QA Tracking",
@@ -57,14 +57,14 @@ export const SIDEBAR_LINK = [
     label: "Activity Logs",
     icon: Activity,
   },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
-  },
-  {
-    href: "/profile",
-    label: "Profile",
-    icon: User,
-  },
+  // {
+  //   href: "/settings",
+  //   label: "Settings",
+  //   icon: Settings,
+  // },
+  // {
+  //   href: "/profile",
+  //   label: "Profile",
+  //   icon: User,
+  // },
 ];

@@ -11,7 +11,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar">
+    <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-accent/20">
       {/* Logo */}
       <div className="h-16 px-5 flex items-center gap-3 border-b">
         <div className="flex flex-col items-center">
@@ -47,7 +47,7 @@ export default function Sidebar() {
                   ${
                     active
                       ? "bg-accent text-accent-foreground"
-                      : "hover:bg-accent/50"
+                      : "hover:bg-accent"
                   }`}
                 >
                   <Icon size={18} className={active ? "text-primary" : ""} />

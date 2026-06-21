@@ -67,7 +67,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b bg-card glass backdrop-blur-sm">
+    <header className="sticky top-0 z-50 h-16 border-b bg-background backdrop-blur-sm">
       <div className="flex h-full items-center justify-between px-4 ">
         {/* SEARCH */}
         <div className="hidden md:block w-full max-w-md">

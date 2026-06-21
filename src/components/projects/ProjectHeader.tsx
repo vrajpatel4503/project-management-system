@@ -4,14 +4,18 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 
 import ProjectCard from "./ProjectCard";
+import AddNewProjectModal from "./AddNewProjectModal";
 
 import { PROJECTS_DATA } from "@/data/projects";
 import { STATUS_OPTIONS } from "@/constants/project.constants";
-import type { Status } from "@/types/project.types";
+import type { ProjectStatus } from "@/types/project.types";
 
 const ProjectHeader = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | Status>("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | ProjectStatus>(
+    "All",
+  );
+  const [open, setOpen] = useState(false);
 
   const filteredProjects = useMemo(() => {
     return PROJECTS_DATA.filter((project) => {
@@ -26,6 +30,7 @@ const ProjectHeader = () => {
     });
   }, [searchQuery, statusFilter]);
 
+
   return (
     <>
       {/* Header */}
@@ -38,7 +43,10 @@ const ProjectHeader = () => {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow">
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow"
+        >
           <Plus size={16} />
           New Project
         </button>
@@ -55,7 +63,7 @@ const ProjectHeader = () => {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as "All" | Status)}
+          onChange={(e) => setStatusFilter(e.target.value as "All" | ProjectStatus)}
           className="w-40 rounded-md border border-border bg-background px-2 py-2 text-sm shadow outline-none focus:ring-1 focus:ring-ring"
         >
           {STATUS_OPTIONS.map((option) => (
@@ -67,6 +75,7 @@ const ProjectHeader = () => {
       </div>
 
       <ProjectCard projects={filteredProjects} />
+      <AddNewProjectModal open={open} onClose={() => setOpen(false)} />
     </>
   );
 };

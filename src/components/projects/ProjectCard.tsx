@@ -1,24 +1,34 @@
+"use client";
+
 import Link from "next/link";
 import { Calendar, Pencil, Trash2 } from "lucide-react";
 
 import { severityStyles, statusStyles } from "@/constants/project.constants";
 import { progressBarColor } from "@/utils/project.utils";
-import { ProjectCardProps, Developer} from "@/types/project.types";
+import { ProjectCardProps } from "@/types/project.types";
 
 export default function ProjectCard({ projects }: ProjectCardProps) {
   if (!projects.length) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-card py-24 text-center">
-        <p className="text-base font-medium text-foreground">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center border border-border rounded-xl">
+        <p className="text-4xl font-medium text-foreground">
           No projects found
         </p>
 
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-lg text-muted-foreground">
           Try a different search term or filter.
         </p>
       </div>
     );
   }
+
+  const getInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((word) => word[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -92,12 +102,12 @@ export default function ProjectCard({ projects }: ProjectCardProps) {
               {/* Team + Status */}
               <div className="mt-6 flex items-center justify-between">
                 <div className="flex -space-x-2">
-                  {visibleDevs.map((dev: Developer) => (
+                  {visibleDevs.map((dev) => (
                     <div
                       key={dev.id}
                       className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-card bg-accent text-[10px] font-medium"
                     >
-                      {dev.initials}
+                      {getInitials(dev.name)}
                     </div>
                   ))}
 
