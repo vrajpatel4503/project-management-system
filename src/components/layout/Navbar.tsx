@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
-import { auth } from "@/components/lib/firebase";
-import { capitalize } from "@/components/lib/format";
+import { auth } from "@/lib/firebase";
+import { capitalize } from "@/lib/format";
+import { Search } from "lucide-react";
 
 import { Bell, Moon, Sun, LogOut, User, Settings } from "lucide-react";
 import { toast } from "sonner";
@@ -13,16 +14,37 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const { user, role } = useAuth();
-
-  const [isDark, setIsDark] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-
   const unreadNotifications = 5;
 
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-    setIsDark(!isDark);
-  };
+  // const [isDark, setIsDark] = useState(false);
+
+  // // 🔥 LOAD THEME ON FIRST LOAD
+  // useEffect(() => {
+  //   const savedTheme = localStorage.getItem("theme");
+
+  //   if (savedTheme === "dark") {
+  //     setIsDark(true);
+  //     document.documentElement.classList.add("dark");
+  //   } else {
+  //     setIsDark(false);
+  //     document.documentElement.classList.remove("dark");
+  //   }
+  // }, []);
+
+  // // 🔥 TOGGLE THEME
+  // const toggleTheme = () => {
+  //   const newTheme = !isDark;
+  //   setIsDark(newTheme);
+
+  //   if (newTheme) {
+  //     document.documentElement.classList.add("dark");
+  //     localStorage.setItem("theme", "dark");
+  //   } else {
+  //     document.documentElement.classList.remove("dark");
+  //     localStorage.setItem("theme", "light");
+  //   }
+  // };
 
   const handleLogout = async () => {
     try {
@@ -45,35 +67,43 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 h-16 border-b bg-card backdrop-blur-sm">
-      <div className="flex h-full items-center justify-between px-6">
-        {/* Search */}
+    <header className="sticky top-0 z-50 h-16 border-b bg-background backdrop-blur-sm">
+      <div className="flex h-full items-center justify-between px-4 ">
+        {/* SEARCH */}
         <div className="hidden md:block w-full max-w-md">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full rounded-lg border px-3 py-2 bg-background outline-none focus:ring-2 focus:ring-primary"
-          />
+          <div className="relative">
+            <Search
+              size={16}
+              strokeWidth={1.5}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
+
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full rounded-md border bg-muted/50 py-1.5 pl-10 pr-3 outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
         </div>
 
-        {/* Right Section */}
+        {/* RIGHT SIDE */}
         <div className="flex items-center gap-2">
-          {/* ROLE BADGE */}
+          {/* ROLE */}
           {role && (
             <div className="flex px-3 py-1 rounded-3xl items-center justify-center bg-primary text-primary-foreground text-sm font-semibold">
               {capitalize(role)}
             </div>
           )}
 
-          {/* Theme */}
+          {/* THEME BUTTON */}
           <button
-            onClick={toggleTheme}
+            // onClick={toggleTheme}
             className="rounded-lg p-2 hover:bg-accent"
           >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <Sun size={18} />
           </button>
 
-          {/* Notifications */}
+          {/* NOTIFICATIONS */}
           <Link
             href="/notifications"
             className="relative rounded-lg p-2 hover:bg-accent"
@@ -88,10 +118,10 @@ export default function Navbar() {
           </Link>
 
           {/* PROFILE */}
-          <div className="relative">
+          <div className="relative ">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-accent"
+              className="flex items-center gap-2 px-2 py-1 bg-accent rounded-3xl"
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
                 {getInitials(user?.email)}
@@ -103,37 +133,38 @@ export default function Navbar() {
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl border bg-card shadow-lg">
-                {/* USER INFO */}
-                <div className="border-b p-3">
+              <div className="absolute right-0 mt-2 w-56 p-2 rounded-xl border bg-card shadow-lg">
+                <div className="border-b px-2 py-2">
                   <p className="font-medium">
                     {user?.email || "Not logged in"}
                   </p>
                 </div>
 
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 px-4 py-3 hover:bg-accent"
-                >
-                  <User size={16} />
-                  Profile
-                </Link>
+                <div className="py-1">
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-2 py-2 hover:bg-accent rounded-xl mb-1"
+                  >
+                    <User size={16} />
+                    Profile
+                  </Link>
 
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-2 px-4 py-3 hover:bg-accent"
-                >
-                  <Settings size={16} />
-                  Settings
-                </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2 px-2 py-2 hover:bg-accent rounded-xl mb-1"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
 
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left bg-red-300 text-black hover:bg-red-500"
-                >
-                  <LogOut size={16} />
-                  Logout
-                </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 px-2 py-2 text-left rounded-xl cursor-pointer bg-red-300 text-white hover:bg-red-500"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
               </div>
             )}
           </div>
