@@ -8,8 +8,7 @@ import { z } from "zod";
 import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { loginUser } from "@/lib/firebase/auth/auth.services";
 import { FirebaseError } from "firebase/app";
 
 import { QUICK_LOGINS } from "@/data/auth-data";
@@ -34,9 +33,6 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      email: "admin@company.com",
-    },
   });
 
   // ----- On submit -----
@@ -44,24 +40,17 @@ export default function LoginForm() {
     try {
       setIsLoading(true);
 
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = await loginUser(data.email, data.password);
 
       toast.success("Login Successful");
 
       router.push("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof FirebaseError) {
+        console.log("Firebase Code:", error.code);
         switch (error.code) {
           case "auth/invalid-credential":
             toast.error("Invalid email or password");
-            break;
-
-          case "auth/user-not-found":
-            toast.error("User not found");
-            break;
-
-          case "auth/wrong-password":
-            toast.error("Wrong password");
             break;
 
           default:

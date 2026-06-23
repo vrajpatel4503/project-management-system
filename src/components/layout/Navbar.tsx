@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase/firebase.config";
 import { capitalize } from "@/lib/format";
 import { Search } from "lucide-react";
 
@@ -68,9 +68,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 h-16 border-b bg-background backdrop-blur-sm">
-      <div className="flex h-full items-center justify-between px-4 ">
+      <div className="flex h-full items-center justify-between px-4 gap-4">
         {/* SEARCH */}
-        <div className="hidden md:block w-full max-w-md">
+        <div className="w-full max-w-xs sm:max-w-sm md:max-w-md">
           <div className="relative">
             <Search
               size={16}
@@ -94,7 +94,6 @@ export default function Navbar() {
               {capitalize(role)}
             </div>
           )}
-
           {/* THEME BUTTON */}
           <button
             // onClick={toggleTheme}
@@ -102,7 +101,6 @@ export default function Navbar() {
           >
             <Sun size={18} />
           </button>
-
           {/* NOTIFICATIONS */}
           <Link
             href="/notifications"
@@ -116,7 +114,6 @@ export default function Navbar() {
               </span>
             )}
           </Link>
-
           {/* PROFILE */}
           <div className="relative ">
             <button
@@ -135,7 +132,7 @@ export default function Navbar() {
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-56 p-2 rounded-xl border bg-card shadow-lg">
                 <div className="border-b px-2 py-2">
-                  <p className="font-medium">
+                  <p className="font-medium break-all">
                     {user?.email || "Not logged in"}
                   </p>
                 </div>
@@ -159,7 +156,7 @@ export default function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-2 py-2 text-left rounded-xl cursor-pointer bg-red-300 text-white hover:bg-red-500"
+                    className="flex w-full items-center gap-2 px-2 py-2 text-left rounded-xl cursor-pointer bg-red-300 text-white hover:bg-destructive"
                   >
                     <LogOut size={16} />
                     Logout

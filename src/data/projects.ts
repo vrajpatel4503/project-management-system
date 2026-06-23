@@ -7,7 +7,7 @@ export const PROJECTS_DATA: ProjectData[] = [
     client: "Northwind Retail",
     description:
       "Retail platform modernization with improved UI and performance.",
-    severity: "High",
+    priority: "High",
     status: "Active",
     progress: 68,
     dueDate: "Jun 20, 2026",
