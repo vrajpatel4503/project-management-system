@@ -40,7 +40,7 @@ export default function LoginForm() {
     try {
       setIsLoading(true);
 
-      const user = await loginUser(data.email, data.password);
+      await loginUser(data.email, data.password);
 
       toast.success("Login Successful");
 

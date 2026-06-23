@@ -105,20 +105,22 @@ const EmployeeHeader = () => {
   return (
     <>
       {/* ==================================================
-          Page Header
-      ================================================== */}
-      <div className="mb-6 flex items-start justify-between">
+    Page Header
+================================================== */}
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-medium text-foreground">Employees</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Employees
+          </h1>
 
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {filteredEmployees.length} employees in your workspace
           </p>
         </div>
 
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
         >
           <Plus size={16} />
           New Employee
@@ -126,49 +128,53 @@ const EmployeeHeader = () => {
       </div>
 
       {/* ==================================================
-          Employee Filters
-      ================================================== */}
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <InputField
-          label="Search"
-          value={searchQuery}
-          placeholder="Search by employee name..."
-          onChange={setSearchQuery}
-        />
+    Employee Filters
+================================================== */}
+      <div className="mb-6 animate-fade-in rounded-xl p-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <InputField
+            label="Search"
+            value={searchQuery}
+            placeholder="Search by employee name..."
+            onChange={setSearchQuery}
+          />
 
-        <SelectField
-          label="Status"
-          value={statusFilter}
-          options={EMPLOYEE_STATUS_OPTIONS}
-          onChange={(value) => setStatusFilter(value as "All" | EmployeeStatus)}
-        />
+          <SelectField
+            label="Status"
+            value={statusFilter}
+            options={EMPLOYEE_STATUS_OPTIONS}
+            onChange={(value) =>
+              setStatusFilter(value as "All" | EmployeeStatus)
+            }
+          />
 
-        <InputField
-          label="Designation"
-          value={designationQuery}
-          placeholder="Search designation..."
-          onChange={setDesignationQuery}
+          <InputField
+            label="Designation"
+            value={designationQuery}
+            placeholder="Search designation..."
+            onChange={setDesignationQuery}
+          />
+        </div>
+      </div>
+
+      {/* ==================================================
+    Employee Table
+================================================== */}
+      <div className="animate-fade-in">
+        <EmployeeTable
+          employee={filteredEmployees}
+          onEdit={handleUpdateEmployee}
         />
       </div>
 
       {/* ==================================================
-          Employee Table
-      ================================================== */}
-      <EmployeeTable
-        employee={filteredEmployees}
-        onEdit={handleUpdateEmployee}
-      />
-
-      {/* ==================================================
-          Add Employee Modal
-      ================================================== */}
+    Add Employee Modal
+================================================== */}
       <AddNewEmployeeModal open={open} onClose={() => setOpen(false)} />
 
       {/* ==================================================
-          Edit Employee Modal
-          (To be implemented)
-      ================================================== */}
-
+    Edit Employee Modal
+================================================== */}
       {isEditOpen && (
         <EditEmployeeModal
           open={isEditOpen}

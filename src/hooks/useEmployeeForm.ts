@@ -6,7 +6,7 @@ const initialForm: CreateEmployee = {
   name: "",
   email: "",
   password: "",
-  role: "Employee",
+  role: "employee",
   designation: "",
   department: "",
   status: "Active",

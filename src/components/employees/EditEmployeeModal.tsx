@@ -70,19 +70,24 @@ export default function EditEmployeeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Edit Employee</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              Edit Employee
+            </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Update employee information
             </p>
           </div>
 
-          <button onClick={handleCancel}>
-            <X className="h-5 w-5 text-gray-500" />
+          <button
+            onClick={handleCancel}
+            className="rounded-full p-2 text-muted-foreground transition-colors bg-accent hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -100,7 +105,7 @@ export default function EditEmployeeModal({
             onChange={(value) => setSingle("email", value)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Role"
               value={form.role}
@@ -110,13 +115,13 @@ export default function EditEmployeeModal({
 
             <InputField
               label="Department"
-              placeholder="Engineer"
+              placeholder="Engineering"
               value={form.department}
               onChange={(value) => setSingle("department", value)}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Status"
               value={form.status}
@@ -126,7 +131,7 @@ export default function EditEmployeeModal({
 
             <InputField
               label="Designation"
-              placeholder="Developer"
+              placeholder="Frontend Developer"
               value={form.designation}
               onChange={(value) => setSingle("designation", value)}
             />
@@ -134,17 +139,17 @@ export default function EditEmployeeModal({
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 border-t border-border pt-4">
           <button
             onClick={handleCancel}
-            className="rounded-lg border px-4 py-2 text-sm"
+            className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Cancel
           </button>
 
           <button
             onClick={handleUpdate}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
           >
             Update Employee
           </button>

@@ -18,6 +18,7 @@ import { ROLE_OPTIONS } from "@/constants/employee.constants";
 import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/employee.constants";
 
 import { useEmployeeForm } from "@/hooks/useEmployeeForm";
+import { employeeSchema } from "@/schemas/employee.schema";
 
 export default function AddNewEmployeeModal({
   open,
@@ -28,14 +29,21 @@ export default function AddNewEmployeeModal({
   if (!open) return null;
 
   const handleAddSubmit = async () => {
+    const result = employeeSchema.safeParse(form);
+
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
+    }
+
     try {
-      await createEmployee(form);
+      await createEmployee(result.data);
 
       toast.success("Employee added successfully");
       resetForm();
       onClose();
     } catch (error) {
-      console.error("Error creating employee:", error);
+      console.log(`Error in handleAddSubmit :- ${error}`);
       toast.error("Failed to create employee");
     }
   };
@@ -47,18 +55,24 @@ export default function AddNewEmployeeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Add Employee</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-xl font-semibold text-foreground">
+              Add Employee
+            </h2>
+
+            <p className="mt-1 text-sm text-muted-foreground">
               Add Manager or Employee account
             </p>
           </div>
 
-          <button onClick={handleCancel}>
-            <X className="h-5 w-5 text-gray-500" />
+          <button
+            onClick={handleCancel}
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -82,22 +96,23 @@ export default function AddNewEmployeeModal({
             onChange={(value) => setSingle("password", value)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Role"
               value={form.role}
               options={ROLE_OPTIONS}
               onChange={(value) => setSingle("role", value as Role)}
             />
+
             <InputField
               label="Department"
-              placeholder="Engineer"
+              placeholder="Engineering"
               value={form.department}
               onChange={(value) => setSingle("department", value)}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Status"
               value={form.status}
@@ -107,7 +122,7 @@ export default function AddNewEmployeeModal({
 
             <InputField
               label="Designation"
-              placeholder="Developer"
+              placeholder="Frontend Developer"
               value={form.designation}
               onChange={(value) => setSingle("designation", value)}
             />
@@ -115,17 +130,17 @@ export default function AddNewEmployeeModal({
         </div>
 
         {/* Actions */}
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 border-t border-border pt-4">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm border rounded-lg"
+            className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             Cancel
           </button>
 
           <button
             onClick={handleAddSubmit}
-            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
           >
             Add Employee
           </button>
