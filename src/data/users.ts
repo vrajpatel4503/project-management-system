@@ -1,4 +1,4 @@
-import { Users } from "@/types/user.types";
+import { Users } from "@/types/employee.types";
 
 export const USERS_DATA: Users[] = [
   // 👑 MANAGERS (3)

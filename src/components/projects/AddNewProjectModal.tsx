@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useProjectForm } from "@/hooks/useProjectForm";
 import { ProjectStatus, Priority } from "@/types/project.types";
 import { RoleSelect } from "./ProjectRoleSelect";
-import { addProject } from "@/lib/firebase/project.services";
+import { addProject } from "@/lib/firebase/projects/project.services";
 import InputField from "../ui/InputField";
 import SelectField from "../ui/SelectField";
 
