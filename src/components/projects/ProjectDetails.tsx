@@ -15,7 +15,7 @@ import ProjectMemberSection from "./ProjectMemberSection";
 import AssignProjectMembersModal from "./AssignProjectMembersModal";
 import EditProjectDetailsModal from "./EditProjectDetailsModal";
 
-import Button from "../ui/Button";
+import Button from "@/components/ui/button";
 import { sections } from "@/constants/project.constants";
 import { progressBarColor } from "@/utils/project.utils";
 import { useProjectPermissions } from "@/hooks/projects/useProjectPermissions";

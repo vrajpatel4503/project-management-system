@@ -8,7 +8,7 @@ import { Employee, TechnicalPositionType } from "@/types/employee.types";
 import { subscribeEmployees } from "@/lib/firebase/employees/employee.services";
 import { assignMembersToProject } from "@/lib/firebase/projects/project.services";
 
-import Button from "@/components/ui/Button";
+import Button from "@/components/ui/button";
 
 type AssignProjectMembersModalProps = {
   isOpen: boolean;

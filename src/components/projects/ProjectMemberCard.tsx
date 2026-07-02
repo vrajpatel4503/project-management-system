@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ProjectMemberCardProps } from "@/types/project.types";
 
 import DeleteConfirmationModal from "../ui/DeleteConfimationModal";
-import Button from "../ui/Button";
+import Button from "@/components/ui/button";
 
 export default function ProjectMemberCard({
   title,

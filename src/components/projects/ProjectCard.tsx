@@ -10,11 +10,11 @@ import { progressBarColor } from "@/utils/project.utils";
 import { ProjectCardProps } from "@/types/project.types";
 import { capitalize } from "@/utils/format";
 
-import Button from "../ui/Button";
 import DeleteConfirmationModal from "../ui/DeleteConfimationModal";
 
 import { deleteProject } from "@/lib/firebase/projects/project.services";
 import { useAuthStore } from "@/lib/store/auth.store";
+import Button from "@/components/ui/button";
 
 export default function ProjectCard({ projects }: ProjectCardProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
