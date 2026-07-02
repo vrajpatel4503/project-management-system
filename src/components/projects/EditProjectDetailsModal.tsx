@@ -1,13 +1,17 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
 import { useProjectForm } from "@/hooks/projects/useProjectForm";
+import { updateProject } from "@/lib/firebase/projects/project.services";
+
 import { RoleSelect } from "./ProjectRoleSelect";
-import { addProject } from "@/lib/firebase/projects/project.services";
+
 import InputField from "../ui/InputField";
 import SelectField from "../ui/SelectField";
-import { toast } from "sonner";
+
 import {
   PROJECT_PRIORITY,
   PROJECT_STATUS,
@@ -15,19 +19,39 @@ import {
   ProjectStatus,
 } from "@/constants/project.constants";
 
-interface AddNewProjectModalProps {
+import { Project } from "@/types/project.types";
+
+interface EditProjectDetailsModalProps {
   open: boolean;
   onClose: () => void;
+  project: Project;
 }
 
-export default function AddNewProjectModal({
+export default function EditProjectDetailsModal({
   open,
   onClose,
-}: AddNewProjectModalProps) {
-  const { form, setForm, getUsers, setSingle, toggleMulti, resetForm } =
-    useProjectForm();
+  project,
+}: EditProjectDetailsModalProps) {
+  const { form, setForm, getUsers, setSingle, toggleMulti } = useProjectForm();
 
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Populate form when modal opens
+  useEffect(() => {
+    if (!open || !project) return;
+
+    setForm({
+      projectName: project.projectName,
+      client: project.client,
+      description: project.description,
+      status: project.status,
+      priority: project.priority,
+      progress: project.progress,
+      dueDate: project.dueDate,
+      projectManager: project.projectManager,
+      teamLeaders: project.teamLeaders,
+    });
+  }, [open, project, setForm]);
 
   if (!open) return null;
 
@@ -38,70 +62,77 @@ export default function AddNewProjectModal({
     setOpenDropdown((prev) => (prev === key ? null : key));
   };
 
-  // -------- Handle Submit ---------
-  const handleSubmit = async () => {
+  const handleEditSubmit = async () => {
     try {
-      await addProject(form);
+      await updateProject(project.id, form);
 
-      toast.success("Project created successfully");
-
-      resetForm();
+      toast.success("Project updated successfully");
       onClose();
-    } catch {
-      toast.error("Failed to create project");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update project");
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/80 backdrop-blur-sm px-4">
       <div className="animate-fade-in scrollbar-thin w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-tl-lg rounded-bl-lg border border-border bg-card p-1 shadow-lg">
-        {/* HEADER */}
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-border p-4">
           <div>
-            <h2 className="text-xl font-semibold">Create New Project</h2>
+            <h2 className="text-xl font-semibold">Edit Project</h2>
             <p className="text-xs text-muted-foreground">
-              Add project details and assign team
+              Edit project details
             </p>
           </div>
 
-          <button onClick={onClose} className="p-2 rounded-full bg-accent">
+          <button onClick={onClose} className="rounded-full bg-accent p-2">
             <X size={22} />
           </button>
         </div>
 
-        {/* BODY */}
-        <div className="p-4 space-y-6">
-          {/* ---- Project Name ---- */}
+        {/* Body */}
+        <div className="space-y-6 p-4">
           <InputField
             label="Project Name"
             value={form.projectName}
-            onChange={(value) => setForm({ ...form, projectName: value })}
+            onChange={(value) =>
+              setForm({
+                ...form,
+                projectName: value,
+              })
+            }
           />
 
-          {/* ---- Client Name ---- */}
           <InputField
             label="Client Name"
             value={form.client}
-            onChange={(value) => setForm({ ...form, client: value })}
+            onChange={(value) =>
+              setForm({
+                ...form,
+                client: value,
+              })
+            }
           />
 
-          {/* ------ Description ----- */}
           <div>
-            <label className="block mb-2 text-sm font-medium">
+            <label className="mb-2 block text-sm font-medium">
               Description
             </label>
+
             <textarea
               value={form.description}
               onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
+                setForm({
+                  ...form,
+                  description: e.target.value,
+                })
               }
-              className={`${inputClass} min-h-22 resize-none`}
+              className={`${inputClass} min-h-24 resize-none`}
             />
           </div>
 
-          {/* ------ Status , Priority, Progrss % */}
-          {/* Status & Priority */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
               label="Status"
               value={form.status}
@@ -127,8 +158,7 @@ export default function AddNewProjectModal({
             />
           </div>
 
-          {/* Progress & Due Date */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <InputField
               label="Progress %"
               type="number"
@@ -154,7 +184,6 @@ export default function AddNewProjectModal({
             />
           </div>
 
-          {/* ---- Team Roles :- (Manager, Team Leader, QA, Developer) --- */}
           <RoleSelect
             label="Manager"
             role="project_manager"
@@ -176,22 +205,21 @@ export default function AddNewProjectModal({
           />
         </div>
 
-        <div className="flex items-center justify-end border-t border-border p-4">
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-accent"
-            >
-              Cancel
-            </button>
+        {/* Footer */}
+        <div className="flex justify-end gap-3 border-t border-border p-4">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-accent"
+          >
+            Cancel
+          </button>
 
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 text-sm bg-primary text-white rounded-lg"
-            >
-              Create Project
-            </button>
-          </div>
+          <button
+            onClick={handleEditSubmit}
+            className="rounded-lg bg-primary px-4 py-2 text-sm text-white"
+          >
+            Edit Changes
+          </button>
         </div>
       </div>
     </div>

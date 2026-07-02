@@ -1,76 +1,107 @@
 "use client";
 
-import { useEffect } from "react";
-import { X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, X } from "lucide-react";
+import { toast } from "sonner";
 
 import {
-  Employee,
   Role,
   EmployeeStatus,
   EditEmployeeModalProps,
+  EmployeeType,
+  TechnicalPositionType,
 } from "@/types/employee.types";
 
 import InputField from "../ui/InputField";
 import SelectField from "../ui/SelectField";
 
-import { ROLE_OPTIONS } from "@/constants/employee.constants";
-import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/employee.constants";
+import {
+  ROLE_OPTIONS,
+  EMPLOYEE_STATUS_OPTIONS,
+  EMPLOYEETYPE_OPTIONS,
+  TECHNICALPOSITION_OPTIONS,
+} from "@/constants/employee.constants";
 
-import { useEmployeeForm } from "@/hooks/useEmployeeForm";
+import { useEmployeeForm } from "@/hooks/employee/useEmployeeForm";
 import { updateEmployee } from "@/lib/firebase/employees/employee.services";
+import { generateAvatarInitials } from "@/utils/employee.utils";
 
 export default function EditEmployeeModal({
   open,
   onClose,
   employee,
 }: EditEmployeeModalProps) {
-  const { form, setForm, setSingle, resetForm } = useEmployeeForm();
+  const [isLoading, setIsLoading] = useState(false);
+  const { form, populateForm, setSingle, resetForm } = useEmployeeForm();
 
-  // Prefill form when employee changes
   useEffect(() => {
     if (!employee) return;
 
-    setForm({
-      name: employee.name,
-      email: employee.email,
-      password: "",
-      role: employee.role,
-      designation: employee.designation,
-      department: employee.department,
-      status: employee.status,
-    });
-  }, [employee, setForm]);
+    populateForm(employee);
+  }, [employee]);
 
   if (!open) return null;
 
   const handleCancel = () => {
+    if (isLoading) return;
     resetForm();
     onClose();
   };
 
+  // ==================================================
+  // Update Employee
+  // ==================================================
   const handleUpdate = async () => {
     if (!employee) return;
 
+    const avatar = generateAvatarInitials(form.name);
+
     try {
-      await updateEmployee(employee.id, {
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        designation: form.designation,
-        department: form.department,
-        status: form.status,
-      });
+      setIsLoading(true);
+      const updatedData =
+        form.role === "admin"
+          ? {
+              name: form.name,
+              email: form.email,
+              role: form.role,
+              department: form.department,
+              status: form.status,
+              joinedAt: form.joinedAt,
+              avatar,
+
+              // Admin doesn't need these
+              employeeType: undefined,
+              technicalPosition: undefined,
+            }
+          : {
+              name: form.name,
+              email: form.email,
+              role: form.role,
+              employeeType: form.employeeType,
+              technicalPosition: form.technicalPosition,
+              department: form.department,
+              status: form.status,
+              joinedAt: form.joinedAt,
+              avatar,
+            };
+
+      await updateEmployee(employee.id, updatedData);
+
+      toast.success("Employee updated successfully");
 
       resetForm();
       onClose();
     } catch (error) {
-      console.error("Error updating employee:", error);
+      console.error(error);
+      toast.error("Failed to update employee");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 px-4 backdrop-blur-sm">
+      <div className="animate-fade-in scrollbar-thin w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-tl-lg rounded-bl-lg border border-border bg-card p-5 shadow-lg">
         {/* Header */}
         <div className="flex items-start justify-between border-b border-border pb-4">
           <div>
@@ -85,14 +116,15 @@ export default function EditEmployeeModal({
 
           <button
             onClick={handleCancel}
-            className="rounded-full p-2 text-muted-foreground transition-colors bg-accent hover:text-foreground"
+            disabled={isLoading}
+            className="rounded-full bg-accent/60 p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
-        <div className="mt-5 space-y-4">
+        <div className="mt-4 space-y-4">
           <InputField
             label="Full Name"
             value={form.name}
@@ -101,10 +133,12 @@ export default function EditEmployeeModal({
 
           <InputField
             label="Email"
+            type="email"
             value={form.email}
             onChange={(value) => setSingle("email", value)}
           />
 
+          {/* Role + Department */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Role"
@@ -121,6 +155,33 @@ export default function EditEmployeeModal({
             />
           </div>
 
+          {form.role === "employee" && (
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <SelectField
+                  label="Employee Type"
+                  value={form.employeeType ?? ""}
+                  options={EMPLOYEETYPE_OPTIONS}
+                  onChange={(value) =>
+                    setSingle("employeeType", value as EmployeeType)
+                  }
+                />
+
+                <SelectField
+                  label="Technical Position"
+                  value={form.technicalPosition ?? ""}
+                  options={TECHNICALPOSITION_OPTIONS}
+                  onChange={(value) =>
+                    setSingle(
+                      "technicalPosition",
+                      value as TechnicalPositionType,
+                    )
+                  }
+                />
+              </div>
+            </>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SelectField
               label="Status"
@@ -130,28 +191,36 @@ export default function EditEmployeeModal({
             />
 
             <InputField
-              label="Designation"
-              placeholder="Frontend Developer"
-              value={form.designation}
-              onChange={(value) => setSingle("designation", value)}
+              label="Joined Date"
+              type="date"
+              value={form.joinedAt}
+              onChange={(value) => setSingle("joinedAt", value)}
             />
           </div>
+
+          {/* Status + Designation */}
+
+          {/* Position + Joined Date */}
         </div>
 
         {/* Actions */}
         <div className="mt-6 flex justify-end gap-3 border-t border-border pt-4">
           <button
+            disabled={isLoading}
             onClick={handleCancel}
-            className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
             Cancel
           </button>
 
           <button
+            disabled={isLoading}
             onClick={handleUpdate}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+            className="rounded-md flex justify-center items-center gap-2 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-90 focus:ring-2 focus:ring-ring"
           >
-            Update Employee
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+
+            {isLoading ? "Updating Employee..." : "Update Employee"}
           </button>
         </div>
       </div>

@@ -1,13 +1,4 @@
-export type Role = "admin" | "manager" | "employee";
-
-export type EmployeeStatus = "All" | "Active" | "Inactive" | "On Leave";
-
-// export type Designation = "All" | "Manager" |"Team Leader" | "Developer" | "QA" | "Designer";
-
-export interface EmployeeTableProps {
-  employee: Employee[];
-  onEdit: (employee: Employee) => void;
-}
+import { Timestamp } from "firebase/firestore";
 
 export interface AddNewEmployeeModalProps {
   open: boolean;
@@ -20,35 +11,67 @@ export interface EditEmployeeModalProps {
   employee: Employee | null;
 }
 
-// --------- Employee -------------
+export interface EmployeeTableProps {
+  employee: Employee[];
+  onEdit: (employee: Employee) => void;
+}
+
+// -- Use in EmployeeHeader.tsx ---
+export type EmployeeStatusFilter = "All" | EmployeeStatus;
+
+// -- Use in EmployeeHeader.tsx ---
+export type TechnicalPositionFilter = "All" | TechnicalPositionType;
+
+export type Role = "admin" | "employee" ;
+
+export type EmployeeType = "project_manager" | "team_leader" | "member";
+
+export type TechnicalPositionType =
+  | "frontend_developer"
+  | "backend_developer"
+  | "mobile_developer"
+  | "qa"
+  | "designer";
+
+export type EmployeeStatus = "active" | "inactive" | "onleave";
+
 export interface Employee {
   id: string;
+
   name: string;
   email: string;
 
   role: Role;
-  designation: string;
+
+  // Only for employees
+  employeeType?: EmployeeType;
+  technicalPosition?: TechnicalPositionType;
 
   department: string;
   status: EmployeeStatus;
-  avatar?: string;
 
+  avatar?: string;
   projectIds?: string[];
 
   joinedAt: string;
-  createdAt?: string;
-  updatedAt?: string;
+
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
-// ---------- Create Employee ------------
+// This is only for the form when adding a new employee.
 export interface CreateEmployee {
   name: string;
   email: string;
   password: string;
 
   role: Role;
-  designation: string;
+
+  employeeType?: EmployeeType;
+  technicalPosition?: TechnicalPositionType;
 
   department: string;
   status: EmployeeStatus;
+
+  joinedAt: string;
 }

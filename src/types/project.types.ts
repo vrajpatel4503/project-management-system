@@ -1,74 +1,65 @@
-export type Priority = "Low" | "Medium" | "High";
-export type ProjectStatus = "Active" | "Pending" | "Hold" | "Completed";
-export type MultiKeys =
-  | "manager"
-  | "teamLeaders"
-  | "developers"
-  | "qa"
-  | "designers";
+import { ProjectPriority, ProjectStatus } from "@/constants/project.constants";
+import { Employee, TechnicalPositionType } from "./employee.types";
 
-// ---------- This can be remove later -----------
-export interface ProjectCardProps {
-  projects: ProjectData[];
-}
+// ---------------- Utility ----------------
 
-export interface Developer {
-  id: string;
-  initials: string;
-}
+export type ProjectMultiField = "teamLeaders";
 
-// ------- Team Member --------
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  position: "Manager" | "Team Leader" | "Developer" | "QA" | "Designer";
-}
+// ---------------- Create / Edit Form ----------------
 
-// ------- ProjectData :- used only for mock data --------
-// ---------- This can be remove later -----------
-export type ProjectData = {
-  id: string;
-  name: string;
-  client: string;
-  description: string;
-
-  status: ProjectStatus;
-  priority: Priority;
-  progress: number;
-
-  dueDate: string;
-  accentColor: string;
-
-  manager: TeamMember;
-  teamLeaders: TeamMember[];
-  developers: TeamMember[];
-  qaMembers: TeamMember[];
-  designers: TeamMember[];
-};
-
-// ------ Project Form :- Used for Add/Edit Project form state and validation. ---------
-export type ProjectForm = {
+export interface CreateProject {
   projectName: string;
   client: string;
   description: string;
 
   status: ProjectStatus;
-  priority: Priority;
+  priority: ProjectPriority;
   progress: number;
 
   dueDate: string;
 
-  manager: string;
+  projectManager: string;
   teamLeaders: string[];
-  developers: string[];
-  qa: string[];
-  designers: string[];
-};
+}
 
-// ------- Firestore Project Type ---------
-// Represents a project document fetched from Firestore.
-// Firestore generates the document ID.
-export type Project = {
+// ---------------- Project ----------------
+
+export interface Project extends CreateProject {
   id: string;
-} & ProjectForm;
+
+  frontend_developer: string[];
+  backend_developer: string[];
+  mobile_developer: string[];
+  qa: string[];
+  designer: string[];
+}
+
+// ---------------- Firestore ----------------
+export interface ProjectFirestore extends CreateProject {
+  frontend_developer: string[];
+  backend_developer: string[];
+  mobile_developer: string[];
+  qa: string[];
+  designer: string[];
+}
+
+// ---------------- Props ----------------
+
+// --- project card props :- Display all projects ---
+export interface ProjectCardProps {
+  projects: Project[];
+}
+
+// --- Project Details Props :- Display project Details ---
+export interface ProjectDetailsProps {
+  project: Project;
+}
+
+// --- Project Member Card Props ---
+export interface ProjectMemberCardProps {
+  title: string;
+  members: Employee[];
+  memberType: TechnicalPositionType;
+  onAdd?: (type: TechnicalPositionType) => void;
+  onRemove?: (memberId: string, memberType: TechnicalPositionType) => void;
+}

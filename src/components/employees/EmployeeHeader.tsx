@@ -3,8 +3,16 @@
 import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { Employee, EmployeeStatus } from "@/types/employee.types";
-import { EMPLOYEE_STATUS_OPTIONS } from "@/constants/employee.constants";
+import {
+  Employee,
+  EmployeeStatus,
+  TechnicalPositionFilter,
+  TechnicalPositionType,
+} from "@/types/employee.types";
+import {
+  EMPLOYEE_STATUS_FILTER_OPTIONS,
+  TECHNICALPOSITION_FILTER_OPTIONS,
+} from "@/constants/employee.constants";
 
 import InputField from "../ui/InputField";
 import SelectField from "../ui/SelectField";
@@ -14,8 +22,13 @@ import AddNewEmployeeModal from "./AddNewEmployeeModal";
 import { subscribeToEmployees } from "@/lib/firebase/employees/employee.services";
 import { useDebounce } from "@/hooks/useDebounce";
 import EditEmployeeModal from "./EditEmployeeModal";
+import { useAuthStore } from "@/lib/store/auth.store";
 
 const EmployeeHeader = () => {
+  // ---- Zustand ----
+  const role = useAuthStore((state) => state.role);
+  const loading = useAuthStore((state) => state.loading);
+  const isAdmin = role === "admin";
   // ==================================================
   // Employee Data State
   // Stores all employees received from Firestore
@@ -27,7 +40,6 @@ const EmployeeHeader = () => {
   // Used for searching and filtering employees
   // ==================================================
   const [searchQuery, setSearchQuery] = useState("");
-  const [designationQuery, setDesignationQuery] = useState("");
 
   const [statusFilter, setStatusFilter] = useState<"All" | EmployeeStatus>(
     "All",
@@ -76,7 +88,8 @@ const EmployeeHeader = () => {
   // ==================================================
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const debouncedDesignationQuery = useDebounce(designationQuery, 500);
+  const [technicalPositionFilter, setTechnicalPositionFilter] =
+    useState<TechnicalPositionFilter>("All");
 
   // ==================================================
   // Filter Employees
@@ -86,27 +99,37 @@ const EmployeeHeader = () => {
   // 3. Employee Designation
   // ==================================================
   const filteredEmployees = useMemo(() => {
-    return employee.filter((emp) => {
-      const matchesSearch = emp.name
-        .toLowerCase()
-        .includes(debouncedSearchQuery.toLowerCase());
+    return employee
+      .filter((emp) => {
+        const matchesSearch = emp.name
+          .toLowerCase()
+          .includes(debouncedSearchQuery.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === "All" || emp.status === statusFilter;
+        const matchesStatus =
+          statusFilter === "All" || emp.status === statusFilter;
 
-      const matchesDesignation = emp.designation
-        .toLowerCase()
-        .includes(debouncedDesignationQuery.toLowerCase());
+        const matchesTechnicalPosition =
+          technicalPositionFilter === "All" ||
+          emp.technicalPosition === technicalPositionFilter;
 
-      return matchesSearch && matchesStatus && matchesDesignation;
-    });
-  }, [employee, debouncedSearchQuery, debouncedDesignationQuery, statusFilter]);
+        return matchesSearch && matchesStatus && matchesTechnicalPosition;
+      })
+      .sort((a, b) => {
+        if (a.role === "admin" && b.role !== "admin") return -1; // Because -1 means keep a before b.
+        if (a.role !== "admin" && b.role === "admin") return 1; // Because -1 means keep b before a.
+        return 0;
+      });
+  }, [employee, debouncedSearchQuery, statusFilter, technicalPositionFilter]);
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <>
       {/* ==================================================
-    Page Header
-================================================== */}
+          Page Header
+          ================================================== */}
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -118,18 +141,20 @@ const EmployeeHeader = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
-        >
-          <Plus size={16} />
-          New Employee
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setOpen(true)}
+            className="cursor-pointer flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:opacity-90 hover:shadow-md"
+          >
+            <Plus size={16} />
+            New Employee
+          </button>
+        )}
       </div>
 
       {/* ==================================================
-    Employee Filters
-================================================== */}
+          Employee Filters
+          ================================================== */}
       <div className="mb-6 animate-fade-in rounded-xl p-5">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <InputField
@@ -142,24 +167,26 @@ const EmployeeHeader = () => {
           <SelectField
             label="Status"
             value={statusFilter}
-            options={EMPLOYEE_STATUS_OPTIONS}
+            options={EMPLOYEE_STATUS_FILTER_OPTIONS}
             onChange={(value) =>
               setStatusFilter(value as "All" | EmployeeStatus)
             }
           />
 
-          <InputField
-            label="Designation"
-            value={designationQuery}
-            placeholder="Search designation..."
-            onChange={setDesignationQuery}
+          <SelectField
+            label="Technical Position"
+            value={technicalPositionFilter}
+            options={TECHNICALPOSITION_FILTER_OPTIONS}
+            onChange={(value) =>
+              setTechnicalPositionFilter(value as "All" | TechnicalPositionType)
+            }
           />
         </div>
       </div>
 
       {/* ==================================================
-    Employee Table
-================================================== */}
+          Employee Table
+          ================================================== */}
       <div className="animate-fade-in">
         <EmployeeTable
           employee={filteredEmployees}
@@ -168,13 +195,13 @@ const EmployeeHeader = () => {
       </div>
 
       {/* ==================================================
-    Add Employee Modal
-================================================== */}
+          Add Employee Modal
+          ================================================== */}
       <AddNewEmployeeModal open={open} onClose={() => setOpen(false)} />
 
       {/* ==================================================
-    Edit Employee Modal
-================================================== */}
+          Edit Employee Modal
+          ================================================== */}
       {isEditOpen && (
         <EditEmployeeModal
           open={isEditOpen}

@@ -1,14 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
 import ProjectDetails from "@/components/projects/ProjectDetails";
-import { PROJECTS_DATA } from "@/data/projects";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+import { Project } from "@/types/project.types";
+import { subscribeProjectById } from "@/lib/firebase/projects/project.services";
 
-  const project = PROJECTS_DATA.find((p) => p.id === id);
+export default function Page() {
+  const params = useParams();
+
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!params.id) return;
+
+    const unsubscribe = subscribeProjectById(
+      params.id as string,
+      (projectData) => {
+        setProject(projectData);
+        setLoading(false);
+      },
+    );
+
+    return unsubscribe;
+  }, [params.id]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
 
   if (!project) {
     return (

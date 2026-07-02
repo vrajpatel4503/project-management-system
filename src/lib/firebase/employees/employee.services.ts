@@ -3,45 +3,33 @@ import {
   collection,
   serverTimestamp,
   onSnapshot,
-  setDoc,
   doc,
-  deleteDoc,
   updateDoc,
 } from "firebase/firestore";
+import { toast } from "sonner";
 import {
   CreateEmployee,
   Employee,
   EmployeeStatus,
 } from "@/types/employee.types";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { toast } from "sonner";
 
-// ------- To add Employee ---------
 export const createEmployee = async (data: CreateEmployee) => {
-  try {
-    const { password, ...employeeData } = data;
+  const response = await fetch("/api/employees", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
-    const { user } = await createUserWithEmailAndPassword(
-      auth,
-      data.email,
-      password,
-    );
+  const result = await response.json();
 
-    await setDoc(doc(db, "users", user.uid), {
-      ...employeeData,
-      avatar: data.name.slice(0, 2).toUpperCase(),
-      projectIds: [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    return user.uid;
-  } catch (error) {
-    console.error("Error creating employee:", error);
-    throw error;
+  if (!response.ok) {
+    throw new Error(result.message || "Failed to create employee");
   }
-};
 
+  return result.uid;
+};
 // ------- To fetch employee ---------
 
 export const subscribeToEmployees = (
@@ -72,10 +60,7 @@ export const updateEmployee = async (id: string, data: Partial<Employee>) => {
       ...data,
       updatedAt: serverTimestamp(),
     });
-
-    toast.success("Employee updated successfully");
   } catch (error) {
-    toast.error("Failed to update employee");
     console.error(error);
     throw error;
   }
@@ -102,9 +87,49 @@ export const updateEmployeeStatus = async (
 // ----- To delete Employee ------
 export const deleteEmployee = async (id: string) => {
   try {
-    await deleteDoc(doc(db, "users", id));
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      throw new Error("Please log in to continue.");
+    }
+
+    const token = await currentUser.getIdToken();
+
+    const response = await fetch("/api/employees/delete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to delete employee.");
+    }
+
+    return data;
   } catch (error) {
-    console.error("Error deleting employee:", error);
-    throw error;
+    console.log(error);
+    throw error instanceof Error
+      ? error
+      : new Error("Something went wrong while deleting the employee.");
   }
+};
+
+// ------ To fetch all user -------
+
+export const subscribeEmployees = (
+  callback: (employees: Employee[]) => void,
+) => {
+  return onSnapshot(collection(db, "users"), (snapshot) => {
+    const employees = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Employee[];
+
+    callback(employees);
+  });
 };
