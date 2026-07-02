@@ -4,7 +4,7 @@ export const metadata = {
   title: "Employee",
 };
 
-export default function EmployeePage() {
+export default function ProjectPage() {
   return (
     <>
       <EmployeeView />

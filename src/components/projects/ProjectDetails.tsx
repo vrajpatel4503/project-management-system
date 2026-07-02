@@ -1,168 +1,217 @@
-import { ProjectData } from "@/types/project.types";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+
+import { TechnicalPositionType } from "@/types/employee.types";
+import { ProjectDetailsProps } from "@/types/project.types";
+
+import { useProjectEmployees } from "@/hooks/projects/useProjectEmployees";
+import { removeMemberFromProject } from "@/lib/firebase/projects/project.services";
 
 import ProjectInfoCard from "./ProjectInfoCard";
-import { progressBarColor } from "@/utils/project.utils";
+import ProjectMemberSection from "./ProjectMemberSection";
+import AssignProjectMembersModal from "./AssignProjectMembersModal";
+import EditProjectDetailsModal from "./EditProjectDetailsModal";
 
-interface ProjectDetailsProps {
-  project: ProjectData;
-}
+import Button from "../ui/Button";
+import { sections } from "@/constants/project.constants";
+import { progressBarColor } from "@/utils/project.utils";
+import { useProjectPermissions } from "@/hooks/projects/useProjectPermissions";
 
 export default function ProjectDetails({ project }: ProjectDetailsProps) {
-  const getInitials = (name: string) =>
-    name
-      .split(" ")
-      .map((word) => word[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
+  const { projectRole, canEditProject, canManageMembers, canDeleteProject } =
+    useProjectPermissions(project);
+  const router = useRouter();
+
+  const { getEmployeesByIds, getEmployee } = useProjectEmployees();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const [memberType, setMemberType] =
+    useState<TechnicalPositionType>("frontend_developer");
+
+  // ---------------- OPEN MODAL ----------------
+  const handleAddMember = (type: TechnicalPositionType) => {
+    setMemberType(type);
+
+    const map: Record<TechnicalPositionType, string[]> = {
+      frontend_developer: project.frontend_developer ?? [],
+      backend_developer: project.backend_developer ?? [],
+      mobile_developer: project.mobile_developer ?? [],
+      qa: project.qa ?? [],
+      designer: project.designer ?? [],
+    };
+
+    setSelectedIds(map[type]);
+    setIsModalOpen(true);
+  };
+
+  // ---------------- REMOVE MEMBER ----------------
+  const handleRemoveMember = async (
+    memberId: string,
+    memberType: TechnicalPositionType,
+  ) => {
+    await removeMemberFromProject(project.id, memberId, memberType);
+  };
 
   return (
     <div className="animate-fade-in min-h-screen bg-background">
       <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="bg-card rounded-3xl border border-border px-4 py-4">
-          <h1 className="text-3xl font-bold">{project.name}</h1>
+        {/* HEADER */}
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={() => router.push("/projects")}
+            variant="primary"
+            size="md"
+            leftIcon={<ArrowLeft size={18} />}
+          >
+            Back to Projects
+          </Button>
 
-          <p className="mt-2 text-muted-foreground">{project.description}</p>
+          {canEditProject && (
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setIsEditOpen(true)}
+            >
+              Edit Project
+            </Button>
+          )}
         </div>
 
-        {/* Project Info */}
+        {/* TITLE */}
+        <div className="rounded-3xl border border-border bg-card px-4 py-4">
+          <h1 className="text-2xl font-bold">{project.projectName}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {project.description}
+          </p>
+        </div>
+
+        {/* PROJECT INFO */}
         <ProjectInfoCard project={project} />
 
-        {/* Progress */}
-        <div className="glass bg-card rounded-3xl border border-border p-4">
-          <div className="mb-3 flex items-center justify-between">
+        {/* PROGRESS */}
+        <div className="rounded-3xl border border-border bg-card p-4">
+          <div className="mb-3 flex justify-between">
             <h2 className="text-lg font-semibold">Project Progress</h2>
-
             <span className="font-semibold">{project.progress}%</span>
           </div>
 
           <div className="h-2 overflow-hidden rounded-full bg-muted">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${progressBarColor(
+              className={`h-full transition-all duration-300 ${progressBarColor(
                 project.progress,
               )}`}
-              style={{
-                width: `${project.progress}%`,
-              }}
+              style={{ width: `${project.progress}%` }}
             />
           </div>
         </div>
 
-        {/* Manager & Team Leader */}
+        {/* PROJECT MANAGER + TEAM LEADERS */}
+        {/* Manager & Team Leaders */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/*  Manager */}
+          {/* Project Manager */}
           <div className="rounded-2xl border border-border bg-card p-4">
             <h3 className="mb-4 text-lg font-semibold">Project Manager</h3>
 
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
-                {getInitials(project.manager.name)}
-              </div>
+            {(() => {
+              const manager = getEmployee(project.projectManager);
 
-              <div>
-                <p className="font-medium">{project.manager.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {project.manager.email}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 👥 Team Leaders (Scrollable) */}
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <h3 className="mb-4 text-lg font-semibold">Team Leaders</h3>
-
-            {/* Scroll only when needed */}
-            <div className="max-h-18 overflow-y-auto pr-2 scrollbar-thin space-y-3">
-              {project.teamLeaders.map((leader) => (
-                <div
-                  key={leader.id}
-                  className="flex items-center gap-4 rounded-xl border border-border bg-card p-3"
-                >
-                  {/* Avatar */}
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-info/10 font-bold text-info">
-                    {getInitials(leader.name)}
+              return manager ? (
+                <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                    {manager.avatar || manager.name.charAt(0).toUpperCase()}
                   </div>
 
-                  {/* Info */}
                   <div>
-                    <p className="font-medium text-sm">{leader.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {leader.email}
+                    <p className="font-medium">{manager.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {manager.email}
                     </p>
                   </div>
                 </div>
-              ))}
-            </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No project manager assigned
+                </p>
+              );
+            })()}
+          </div>
+
+          {/* Team Leaders */}
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <h3 className="mb-4 text-lg font-semibold">Team Leaders</h3>
+
+            {project.teamLeaders.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {project.teamLeaders.map((leaderId) => {
+                  const leader = getEmployee(leaderId);
+
+                  if (!leader) return null;
+
+                  return (
+                    <div
+                      key={leader.id}
+                      className="flex items-center gap-3 rounded-lg border border-border p-3"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                        {leader.avatar || leader.name.charAt(0).toUpperCase()}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{leader.name}</p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {leader.email}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No team leaders assigned
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Team Members */}
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Developers */}
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <h3 className="mb-4 text-lg font-semibold">
-              Developers ({project.developers.length})
-            </h3>
-
-            <div className="max-h-64 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
-              {project.developers.map((dev) => (
-                <div
-                  key={dev.id}
-                  className="rounded-lg border border-border p-3"
-                >
-                  <p className="font-medium">{dev.name}</p>
-
-                  <p className="text-sm text-muted-foreground">{dev.email}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* QA */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="mb-4 text-lg font-semibold">
-              QA Members ({project.qaMembers.length})
-            </h3>
-
-            <div className="max-h-64 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
-              {project.qaMembers.map((qa) => (
-                <div
-                  key={qa.id}
-                  className="rounded-lg border border-border p-3"
-                >
-                  <p className="font-medium">{qa.name}</p>
-
-                  <p className="text-sm text-muted-foreground">{qa.email}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Designers */}
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <h3 className="mb-4 text-lg font-semibold">
-              Designers ({project.designers.length})
-            </h3>
-
-            <div className="max-h-64 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
-              {project.designers.map((designer) => (
-                <div
-                  key={designer.id}
-                  className="rounded-lg border border-border p-3"
-                >
-                  <p className="font-medium">{designer.name}</p>
-
-                  <p className="text-sm text-muted-foreground">
-                    {designer.email}
-                  </p>
-                </div>
-              ))}
-            </div>
+        {/* Team Section :- Frontend, Backend, Mobile, QA, Designer */}
+        <div className="w-full overflow-hidden">
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {sections.map((sec) => (
+              <ProjectMemberSection
+                key={sec.type}
+                title={sec.title}
+                memberType={sec.type}
+                members={getEmployeesByIds(project[sec.type] || [])}
+                onAdd={canManageMembers ? handleAddMember : undefined}
+                onRemove={canManageMembers ? handleRemoveMember : undefined}
+              />
+            ))}
           </div>
         </div>
       </div>
+
+      {/* MODALS */}
+      <AssignProjectMembersModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        memberType={memberType}
+        projectId={project.id}
+        selectedIds={selectedIds}
+        setSelectedIds={setSelectedIds}
+      />
+
+      <EditProjectDetailsModal
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        project={project}
+      />
     </div>
   );
 }

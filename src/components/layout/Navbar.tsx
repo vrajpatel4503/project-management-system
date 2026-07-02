@@ -1,21 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/firebase.config";
-import { capitalize } from "@/lib/format";
+import { capitalize } from "@/utils/format";
 import { Search } from "lucide-react";
 
 import { Bell, Moon, Sun, LogOut, User, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { FirebaseError } from "firebase/app";
-import { useAuth } from "@/context/AuthContext";
+import { useAuthStore } from "@/lib/store/auth.store";
 
 export default function Navbar() {
-  const { user, role } = useAuth();
+  const clearAuth = useAuthStore.getState().clearAuth;
+  const { user, role, loading } = useAuthStore();
   const [profileOpen, setProfileOpen] = useState(false);
   const unreadNotifications = 5;
+
+  const isAdmin = role === "admin";
+
+  if (loading) {
+    return null; // or skeleton UI
+  }
 
   // const [isDark, setIsDark] = useState(false);
 
@@ -50,6 +57,7 @@ export default function Navbar() {
     try {
       await signOut(auth);
       toast.success("Logged out successfully");
+      clearAuth();
     } catch (error: unknown) {
       console.error(error);
 

@@ -1,19 +1,25 @@
-import {  ProjectData, Severity, Status } from "@/types/project.types";
-import { severityStyles, statusStyles } from "@/constants/project.constants";
+import { ProjectForm } from "@/types/project.types";
+import {
+  ProjectPriority,
+  severityStyles,
+  statusStyles,
+  ProjectStatus,
+} from "@/constants/project.constants";
+import { capitalize } from "@/utils/format";
 
 interface ProjectInfoCardProps {
-  project: ProjectData;
+  project: ProjectForm;
 }
 
 export default function ProjectInfoCard({ project }: ProjectInfoCardProps) {
   const status = {
     label: project.status,
-    className: statusStyles[project.status as Status],
+    className: statusStyles[project.status as ProjectStatus],
   };
 
   const severity = {
-    label: project.severity,
-    className: severityStyles[project.severity as Severity],
+    label: project.priority,
+    className: severityStyles[project.priority as ProjectPriority],
   };
 
   const projectDetails = [
@@ -40,7 +46,7 @@ export default function ProjectInfoCard({ project }: ProjectInfoCardProps) {
               <span
                 className={`mt-2 inline-block rounded-full border px-3 py-1 text-sm ${status.className}`}
               >
-                {status.label}
+                {capitalize(status.label)}
               </span>
             )}
 
@@ -48,7 +54,7 @@ export default function ProjectInfoCard({ project }: ProjectInfoCardProps) {
               <span
                 className={`mt-2 inline-block rounded-full border px-3 py-1 text-sm ${severity.className}`}
               >
-                {severity.label}
+                {capitalize(severity.label)}
               </span>
             )}
 
